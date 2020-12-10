@@ -7,9 +7,9 @@
  * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
  */
 /******/ (() => { // webpackBootstrap
-/*!**************************!*
-  !*** ./src/analytics.js ***!
-  \**************************/
-eval("function createAnalytics() {\r\n  let counter = 0;\r\n  let isDestroyed = false;\r\n\r\n  const listener = () => counter++;\r\n\r\n  document.addEventListener('click', listener);\r\n\r\n  return {\r\n    destroy() {\r\n      document.removeEventListener('click', listener);\r\n    },\r\n\r\n    getClicks() {\r\n      if (isDestroyed) {\r\n        return 'Destroy';\r\n      }\r\n      return counter;\r\n    },\r\n  };\r\n}\r\n\n\n//# sourceURL=webpack://webpuck/./src/analytics.js?");
+/*!**********************!*
+  !*** ./analytics.js ***!
+  \**********************/
+eval("function createAnalytics() {\r\n  let counter = 0;\r\n  let destroyed = false;\r\n\r\n  const listener = () => counter++;\r\n\r\n  document.addEventListener('click', listener);\r\n\r\n  return {\r\n    destroy() {\r\n      document.removeEventListener('click', listener);\r\n      destroyed = true;\r\n    },\r\n\r\n    getClicks() {\r\n      if (destroyed) {\r\n        return 'Destroy';\r\n      }\r\n      return counter;\r\n    },\r\n  };\r\n}\r\n\n\n//# sourceURL=webpack:///./analytics.js?");
 /******/ })()
 ;
