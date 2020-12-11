@@ -1,9 +1,11 @@
+@import '~normalize.css';
 body {
   width: 100%;
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
 }
 .container {
   padding: 20px;
@@ -15,4 +17,11 @@ h1 {
   font-size: 50px;
   font-weight: 600;
   font-family: serif;
+}
+.code {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(187, 66, 44);
 }
