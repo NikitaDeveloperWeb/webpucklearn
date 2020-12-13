@@ -2,15 +2,55 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
+const TerserWebpackPlugin = require('terser-webpack-plugin');
+const isDev = process.env.NODE_ENV === 'development';
+const isProd = !isDev;
+
+// require('@babel/core').transform('code', {
+//   plugins: ['@babel/plugin-proposal-class-properties'],
+// });
+
+const optimization = () => {
+  const config = {
+    splitChunks: {
+      chunks: 'all',
+    },
+  };
+  if (isProd) {
+    config.minimizer = [new OptimizeCssAssetsWebpackPlugin(), new TerserWebpackPlugin()];
+  }
+  return config;
+};
+
+const filename = (ext) => (isDev ? `[name].${ext}` : `[name].[hash].${ext}`);
+const cssLoader = (extra) => {
+  const loaders = [
+    {
+      loader: MiniCssExtractPlugin.loader,
+      options: {
+        // hmr: isDev,
+        // reloadAll: true,
+      },
+    },
+    'css-loader',
+  ]; //rigth to left
+  if (extra) {
+    loaders.push(extra);
+  }
+  return loaders;
+};
+
 module.exports = {
   context: path.resolve(__dirname, 'src'),
   mode: 'development',
   entry: {
-    main: './index.js',
-    analytics: './analytics.js',
+    main: ['@babel/polyfill', './index.jsx'],
+    analytics: './analytics.ts',
   },
   output: {
-    filename: '[name].[contenthash].js',
+    filename: filename('js'),
     path: path.resolve(__dirname, 'dist'),
   },
   resolve: {
@@ -20,11 +60,8 @@ module.exports = {
       '@': path.resolve(__dirname, 'src'),
     },
   },
-  optimization: {
-    splitChunks: {
-      chunks: 'all',
-    },
-  },
+  // devTool: isDev ? 'source-map' : '',
+  optimization: optimization(),
   // target: 'web',
   devServer: {
     port: 4200,
@@ -32,15 +69,23 @@ module.exports = {
     contentBase: path.resolve(__dirname, './dist'),
     open: true,
     compress: true,
-    hot: true,
+    hot: isDev,
   },
   plugins: [
-    new HtmlWebpackPlugin({ template: './index.html' }),
+    new HtmlWebpackPlugin({
+      template: './index.html',
+      minify: {
+        collapseWhitespace: isProd,
+      },
+    }),
     new CleanWebpackPlugin(),
     new CopyWebpackPlugin({
       patterns: [
         { from: path.resolve(__dirname, 'src/favicon.ico'), to: path.resolve(__dirname, 'dist') },
       ],
+    }),
+    new MiniCssExtractPlugin({
+      filename: filename('.css'),
     }),
   ],
   module: {
@@ -48,7 +93,11 @@ module.exports = {
       //styles
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'], //rigth to left
+        use: cssLoader(),
+      },
+      {
+        test: /\.scss$/,
+        use: cssLoader('sass-loader'),
       },
       //image
       {
@@ -69,6 +118,39 @@ module.exports = {
       {
         test: /\.csv$/,
         use: ['csv-loader'],
+      },
+      {
+        test: /\.m?js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: ['babel-loader', 'eslint-loader'],
+          options: {
+            presets: ['@babel/preset-env'],
+            plugins: [['@babel/plugin-proposal-class-properties', { loose: true }]],
+          },
+        },
+      },
+      {
+        test: /\.m?ts$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-typescript'],
+            plugins: [['@babel/plugin-proposal-class-properties', { loose: true }]],
+          },
+        },
+      },
+      {
+        test: /\.jsx$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-react'],
+            plugins: [['@babel/plugin-proposal-class-properties', { loose: true }]],
+          },
+        },
       },
     ],
   },
